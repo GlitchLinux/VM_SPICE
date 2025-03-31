@@ -1,7 +1,7 @@
 ### Debian/Ubuntu
 ```bash
-rm -r -f /tmp/GlitchLinux/VM_SPICE.git && cd /tmp 
+rm -r -f /tmp/VM_SPICE && cd /tmp
 git clone https://github.com/GlitchLinux/VM_SPICE.git
-cd GlitchLinux/VM_SPICE.git && sudo chmod +x VM_SPICE
-sudo bash VM_SPICE
+cd VM_SPICE && sudo chmod +x VM_SPICE.sh
+sudo bash VM_SPICE.sh
 ```
