@@ -6,7 +6,7 @@ export GTK_THEME=Orchis:dark
 # Check for required packages
 check_dependencies() {
     local missing=()
-    for cmd in virsh virt-install; do
+    for cmd in virsh virt-install qemu-system-x86_64; do
         if ! which $cmd >/dev/null 2>&1; then
             missing+=("$cmd")
         fi
@@ -18,12 +18,40 @@ check_dependencies() {
                --width=400 --height=150
         
         if [ $? -eq 0 ]; then
-            sudo apt-get update && sudo apt-get install -y libvirt-clients libvirt-daemon-system virtinst qemu-kvm virt-viewer
+            sudo apt-get update && sudo apt-get install -y \
+                qemu qemu-kvm qemu-system-x86_64 \
+                libvirt-clients libvirt-daemon-system \
+                virtinst virt-viewer virt-manager \
+                bridge-utils ovmf swtpm \
+                ebtables dnsmasq-base
             if [ $? -ne 0 ]; then
                 zenity --error --title="Installation Failed" \
-                       --text="Failed to install required packages. Please install manually:\nsudo apt install libvirt-clients libvirt-daemon-system virtinst qemu-kvm virt-viewer" \
+                       --text="Failed to install required packages. Please install manually:\nsudo apt install qemu qemu-kvm qemu-system-x86_64 libvirt-clients libvirt-daemon-system virtinst virt-viewer virt-manager bridge-utils ovmf swtpm" \
                        --width=400 --height=150
                 exit 1
+            fi
+            
+            # Check if libvirtd is running
+            if ! systemctl is-active --quiet libvirtd; then
+                zenity --question --title="Start libvirtd Service" \
+                       --text="libvirtd service is not running. Start and enable it now?" \
+                       --width=400 --height=150
+                if [ $? -eq 0 ]; then
+                    sudo systemctl enable --now libvirtd
+                fi
+            fi
+            
+            # Add user to libvirt group if needed
+            if ! groups $USER | grep -q '\blibvirt\b'; then
+                zenity --question --title="Add User to libvirt Group" \
+                       --text="Add your user to the libvirt group for better permissions?" \
+                       --width=400 --height=150
+                if [ $? -eq 0 ]; then
+                    sudo usermod -aG libvirt $USER
+                    zenity --info --title="Group Membership Updated" \
+                           --text="You may need to logout and login again for group changes to take effect." \
+                           --width=400 --height=150
+                fi
             fi
         else
             exit 1
@@ -304,6 +332,9 @@ while true; do
     # Add UEFI/BIOS configuration
     if [ "$boot_mode" == "UEFI" ]; then
         virt_command="$virt_command --boot uefi --machine q35"
+        if [ -d /usr/share/OVMF ]; then
+            virt_command="$virt_command --boot loader=/usr/share/OVMF/OVMF_CODE.fd"
+        fi
     fi
 
     # Add extra disks if specified
