@@ -19,7 +19,7 @@ check_dependencies() {
         
         if [ $? -eq 0 ]; then
             sudo apt-get update && sudo apt-get install -y \
-                qemu qemu-kvm qemu-system-x86_64 \
+                qemu-kvm \
                 libvirt-clients libvirt-daemon-system \
                 virtinst virt-viewer virt-manager \
                 bridge-utils ovmf swtpm \
