@@ -26,7 +26,7 @@ check_dependencies() {
                 ebtables dnsmasq-base
             if [ $? -ne 0 ]; then
                 zenity --error --title="Installation Failed" \
-                       --text="Failed to install required packages. Please install manually:\nsudo apt install qemu-kvm qemu-system-x86_64 libvirt-clients libvirt-daemon-system virtinst virt-viewer virt-manager bridge-utils ovmf swtpm" \
+                       --text="Failed to install required packages. Please install manually:\nsudo apt install qemu-kvm libvirt-clients libvirt-daemon-system virtinst virt-viewer virt-manager bridge-utils ovmf swtpm" \
                        --width=400 --height=150
                 exit 1
             fi
